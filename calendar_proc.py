@@ -37,8 +37,36 @@ color_map = {
     "11":"Tomato",
     "-":"Peacock"
 }
-
-
+event_types = {
+    "1":"work",
+    "2":"ancillary",
+    "3":"exercise",
+    "4":"meal",
+    "5":"break",
+    "6":"off-time"
+}
+def classify(event):
+    event_color = ""
+    event_type = ""
+    try:
+        event_color = color_map[event['colorId']]
+    except:
+        event_color = color_map["-"]
+    if event_color == "Basil":
+        return event_types["1"]
+    elif event_color == "Sage":
+        return event_types["2"]
+    elif event_color == "Tangerine":
+        return event_types["3"]
+    elif event_color == "Blueberry":
+        return event_types["4"]
+    elif event_color == "Flamingo":
+        return event_types["5"]
+    else event_color == "Peacock":
+        return event_types["6"]
+    return "undefined"
+        
+        
 def main():
     """Shows basic usage of the Google Calendar API.
     Prints the start and name of the next 10 events on the user's calendar.
@@ -80,10 +108,7 @@ def main():
         start = event['start'].get('dateTime', event['start'].get('date'))
         end = event['end'].get('dateTime', event['end'].get('date'))
         print(start, end, event['summary'], end=" ")
-        try:
-            print(color_map[event['colorId']])
-        except:
-            print(color_map["-"])
+        print(classify(event))
 
 
 if __name__ == '__main__':
