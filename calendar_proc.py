@@ -9,6 +9,7 @@ import matplotlib
 matplotlib.rcParams.update({'font.size': 18})
 from itertools import groupby
 from statistics import mean
+from statistics import median
 import datetime
 import pickle
 import os.path
@@ -157,7 +158,16 @@ def main():
     for i,num in enumerate(work_hours_arr):
         movave_work_hrs.append(mean(work_hours_arr[max(0,i-movave_window):i+1])*movave_window)
     
-    print(f"Total number of days: {len(days)}/{window_size}")                        
+    print(f"Total days in this report: {len(days)}/{window_size}")  
+    print(f"Of these, days off: {len([day for day in work_hours_arr if day < 1])}")
+    print(f"Mean work hours a day (excl days off):       {round(mean([day for day in work_hours_arr if day >= 1]),2)} hours")
+    print(f"Median work hours a day (excl days off):     {round(median([day for day in work_hours_arr if day >= 1]),2)} hours")
+    distance_between_days_off = map(lambda x,y: y-x, 
+                   [i for i,day in enumerate(work_hours_arr) if day < 1][:-1], 
+                   [i for i,day in enumerate(work_hours_arr) if day < 1][1:])
+    print(f"Mean time between days off:                  {round(mean(distance_between_days_off),2)} days")
+    print(f"Mean work hours on an off-day:               {round(mean([day for day in work_hours_arr if day < 1]),2)} hours")
+    
 # # Bar plot of average Work Hours vs Start of Day
 #     plt.figure(figsize=(20,10))
 #     plt.bar([pair[0] for pair in binned_grpd_strts], 
