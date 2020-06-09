@@ -1,9 +1,4 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-get_ipython().system('jupyter nbconvert --to script --no-prompt calendar_proc.ipynb')
-
-from __future__ import print_function
+# from __future__ import print_function
 from matplotlib import pyplot as plt
 import matplotlib
 matplotlib.rcParams.update({'font.size': 18})
@@ -29,7 +24,6 @@ except ImportError:
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
 
-window_size = 60
 color_map = {
     "1":"Lavender",
     "2":"Sage",
@@ -74,7 +68,7 @@ def classify(event):
     return "undefined"
         
         
-def main():
+def main(window_size=60):
     """Shows basic usage of the Google Calendar API.
     Prints the start and name of the next 10 events on the user's calendar.
     """
