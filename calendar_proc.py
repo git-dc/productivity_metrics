@@ -8,6 +8,7 @@ from statistics import median
 import datetime
 import pickle
 import os.path
+import numpy as np
 # import re
 try:
     from googleapiclient.discovery import build
@@ -154,6 +155,7 @@ def main(window_size=60):
     
     print(f"Total days in this report: {len(days)}/{window_size}")  
     print(f"Of these, days off: {len([day for day in work_hours_arr if day < 1])}")
+    print(f"Total work hours in this report: {sum([day for day in work_hours_arr])}")
     print(f"Mean work hours a day (excl days off):       {round(mean([day for day in work_hours_arr if day >= 1]),2)} hours")
     print(f"Median work hours a day (excl days off):     {round(median([day for day in work_hours_arr if day >= 1]),2)} hours")
     distance_between_days_off = map(lambda x,y: y-x, 
@@ -162,24 +164,6 @@ def main(window_size=60):
     print(f"Mean time between days off:                  {round(mean(distance_between_days_off),2)} days")
     print(f"Mean work hours on an off-day:               {round(mean([day for day in work_hours_arr if day < 1]),2)} hours")
     
-# # Bar plot of average Work Hours vs Start of Day
-#     plt.figure(figsize=(20,10))
-#     plt.bar([pair[0] for pair in binned_grpd_strts], 
-#             [pair[1]/scale_f for pair in binned_grpd_strts],
-#             color="grey",
-#             alpha=.85,
-#             edgecolor="black",
-#             width=.6,
-#            )
-#     plt.bar([pair[0] for pair in averaged_binned_wrk_hrs], 
-#             [pair[1] for pair in averaged_binned_wrk_hrs],
-#             color="darkgreen", 
-#             alpha=.7,
-#             edgecolor="black"
-#            )    
-#     plt.xlabel("Start of Day")
-#     plt.ylabel("Work Hours (hr) / Observations (scaled)")
-#     plt.show()
     
 # # 2D histogram of Start of Day vs Work Hours    
 #     plt.figure(figsize=(20,10))
@@ -193,10 +177,11 @@ def main(window_size=60):
     dates = [datetime.date.fromisoformat(day) for day in days]
     plt.xlim((dates[0],dates[-1]))
     plt.grid()
+    colors = np.where(np.array(work_hours_arr)<1,'grey',"darkgreen")
     ax.scatter(dates, 
                 work_hours_arr,
                 marker='s',
-                color='darkgreen',
+                color=colors,
                )
     ax.plot(dates,
              work_hours_arr,
@@ -213,7 +198,26 @@ def main(window_size=60):
                 movave_work_hrs,
                 linewidth=2)
     
-    
+# Bar plot of average Work Hours vs Start of Day
+    plt.figure(figsize=(20,10))
+    plt.grid()
+    plt.bar([pair[0] for pair in binned_grpd_strts], 
+            [pair[1]/scale_f for pair in binned_grpd_strts],
+            color="grey",
+            alpha=.85,
+            edgecolor="black",
+            width=.6,
+           )
+    plt.bar([pair[0] for pair in averaged_binned_wrk_hrs], 
+            [pair[1] for pair in averaged_binned_wrk_hrs],
+            color="darkgreen", 
+            alpha=.7,
+            edgecolor="black"
+           )    
+    plt.xlabel("Start of Day Time")
+    plt.ylabel("Mean Work Hours (hr) / Observations (scaled)")
+    plt.show()
+
     
     
 if __name__ == '__main__':
