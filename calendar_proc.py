@@ -9,7 +9,7 @@ import datetime
 import pickle
 import os.path
 import numpy as np
-# import re
+
 try:
     from googleapiclient.discovery import build
 except ImportError:
@@ -174,11 +174,12 @@ def main(window_size=60):
     
 # Scatter plot of Work Hours vs Time
     fig,ax = plt.subplots(figsize=(20,10),constrained_layout=True)
+    #fig,ax = plt.subplots(figsize=(9,6), constrained_layout=True)
     dates = [datetime.date.fromisoformat(day) for day in days]
     plt.xlim((dates[0],dates[-1]))
     plt.grid()
     colors = np.where(np.array(work_hours_arr)<1,'grey',"darkgreen")
-    ax.scatter(dates, 
+    sc = ax.scatter(dates, 
                 work_hours_arr,
                 marker='s',
                 color=colors,
@@ -197,9 +198,33 @@ def main(window_size=60):
     secaxy.plot(dates,
                 movave_work_hrs,
                 linewidth=2)
+    # annot = ax.annotate("", xy=(0,0), xytext=(20,20),textcoords="offset points",
+    #                     arrowprops=dict(arrowstyle="->"))
+    # annot.set_visible(False)
+
+    # def update_annot(ind):
+    #     pos = sc.get_offsets()[ind["ind"][0]]
+    #     annot.xy = pos
+    #     text = "{}".format(" ".join(list(map(str,ind["ind"]))))
+    #     annot.set_text(text)
+
+    # def hover(event):
+    #     vis = annot.get_visible()
+    #     if event.inaxes == ax:
+    #         cont, ind = sc.contains(event)
+    #         if cont:
+    #             update_annot(ind)
+    #             annot.set_visible(True)
+    #             fig.canvas.draw_idle()
+    #         else:
+    #             if vis:
+    #                 annot.set_visible(False)
+    #                 fig.canvas.draw_idle()
+    # fig.canvas.mpl_connect("motion_notify_event", hover)
+    plt.show()
     
 # Bar plot of average Work Hours vs Start of Day
-    plt.figure(figsize=(20,10))
+    plt.figure(figsize=(20,10),constrained_layout=True)
     plt.grid()
     plt.bar([pair[0] for pair in binned_grpd_strts], 
             [pair[1]/scale_f for pair in binned_grpd_strts],
@@ -218,7 +243,7 @@ def main(window_size=60):
     plt.ylabel("Mean Work Hours (hr) / Observations (scaled)")
     plt.show()
 
-    
+                        
     
 if __name__ == '__main__':
     main()
