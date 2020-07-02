@@ -39,6 +39,7 @@ color_map = {
     "11":"Tomato",
     "-":"Peacock"
 }
+
 event_types = {
     "1":"work",
     "2":"ancillary",
@@ -47,27 +48,28 @@ event_types = {
     "5":"break",
     "6":"off-time"
 }
+
+event_type_map = {
+    "Basil":"1",
+    "Sage":"2",
+    "Tangerine":"3",
+    "Blueberry":"4",
+    "Graphite":"4",
+    "Flamingo":"5",
+    "Peacock":"6",
+    "Banana":"6",
+    "Lavender":"6",
+    "Grape":"6",
+    "Tomato":"6"
+}
+
 def classify(event):
-    event_color = ""
-    event_type = ""
     try:
         event_color = color_map[event['colorId']]
     except:
         event_color = color_map["-"]
-    if event_color == "Basil" or "picogrid" in event["summary"].lower():
-        return event_types["1"]
-    elif event_color == "Sage":
-        return event_types["2"]
-    elif event_color == "Tangerine":
-        return event_types["3"]
-    elif event_color == "Blueberry" or event_color == "Graphite":
-        return event_types["4"]
-    elif event_color == "Flamingo":
-        return event_types["5"]
-    elif event_color == "Peacock" or event_color == "Banana":
-        return event_types["6"]
-    return "undefined"
-        
+    event_type_key = event_type_map[event_color]
+    return event_types[event_type_key]
         
 def main(window_size=60):
     """Shows basic usage of the Google Calendar API.
@@ -96,20 +98,29 @@ def main(window_size=60):
 
     # Call the Calendar API
     now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
-    start_date = (datetime.datetime.today() - datetime.timedelta(window_size)).isoformat() + 'Z'
-    print(f'Getting the events in the {start_date[:10]} ~ {now[:10]} interval:')
-    events_result = service.events().list(calendarId='primary', timeMin=start_date, timeMax=now,
-                                        maxResults=2500, singleEvents=True, 
-                                        orderBy='startTime').execute()
+    start_date = (datetime.datetime.today() - \
+                  datetime.timedelta(window_size))\
+                  .isoformat() + 'Z'
+    print(f'Getting the events in the \
+    {start_date[:10]} ~ {now[:10]} interval:')
+    events_result = service.events().list(calendarId='primary',
+                                          timeMin=start_date,
+                                          timeMax=now,
+                                          maxResults=2500,
+                                          singleEvents=True, 
+                                          orderBy='startTime').execute()
     events = events_result.get('items', [])
     print(f"Total number of events: {len(events)}")
     days = {}
     if not events:
         print('No upcoming events found.')
     for event in events:
-        start_time = event['start'].get('dateTime', event['start'].get('date'))
-        end_time = event['end'].get('dateTime', event['end'].get('date'))
-        event["duration"] = datetime.datetime.fromisoformat(end_time) -                             datetime.datetime.fromisoformat(start_time)
+        start_time = event['start'].get('dateTime',
+                                        event['start'].get('date'))
+        end_time = event['end'].get('dateTime',
+                                    event['end'].get('date'))
+        event["duration"] = datetime.datetime.fromisoformat(end_time) - \
+            datetime.datetime.fromisoformat(start_time)
         start_day = start_time[:10]
         if start_day not in days:
             days[start_day] = []
@@ -151,7 +162,7 @@ def main(window_size=60):
     movave_window = 7
     movave_work_hrs = []
     for i,num in enumerate(work_hours_arr):
-        movave_work_hrs.append(mean(work_hours_arr[max(0,i-movave_window):i+1])*movave_window)
+        movave_work_hrs.append(sum(work_hours_arr[max(0,i-movave_window):i]))
     
     print(f"Total days in this report: {len(days)}/{window_size}")  
     print(f"Of these, days off: {len([day for day in work_hours_arr if day < 1])}")
