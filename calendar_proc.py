@@ -101,8 +101,8 @@ def main(window_size=60):
     start_date = (datetime.datetime.today() - \
                   datetime.timedelta(window_size))\
                   .isoformat() + 'Z'
-    print(f'Getting the events in the \
-    {start_date[:10]} ~ {now[:10]} interval:')
+    print(f'Getting the events in the\
+ {start_date[:10]} ~ {now[:10]} interval:')
     events_result = service.events().list(calendarId='primary',
                                           timeMin=start_date,
                                           timeMax=now,
@@ -148,7 +148,7 @@ def main(window_size=60):
                 work_hours += event["duration"]
         rest_hours = datetime.timedelta(hours=16) - work_hours
         work_hours_arr.append(work_hours.total_seconds()/3600)
-        start_of_day_arr.append(float(start_of_day[11:13])+float(start_of_day[14:16])/60)
+        start_of_day_arr.append(float(start_of_day[11:13]) + float(start_of_day[14:16])/60)
     
     binned_start_of_day_arr = [int(round(tmstp)) for tmstp in start_of_day_arr]
     binned_grpd_strts = groupby(sorted(binned_start_of_day_arr), lambda p:p)
@@ -159,14 +159,16 @@ def main(window_size=60):
     grouper = groupby(sorted_mapping, lambda p:p[0])
     averaged_binned_wrk_hrs = [(group[0], mean([pair[1] for pair in group[1]])) for group in grouper]
     
-    movave_window = 7
+    movave_window = 6 # set to 6 for 7 day week
     movave_work_hrs = []
+    total_work_hrs = 0
     for i,num in enumerate(work_hours_arr):
-        movave_work_hrs.append(sum(work_hours_arr[max(0,i-movave_window):i]))
-    
+        total_work_hrs += num
+        movave_work_hrs.append(sum(work_hours_arr[max(0, i - movave_window):i + 1]))
     print(f"Total days in this report: {len(days)}/{window_size}")  
     print(f"Of these, days off: {len([day for day in work_hours_arr if day < 1])}")
-    print(f"Total work hours in this report: {sum([day for day in work_hours_arr])}")
+    print(f"Total work hours in this report: {total_work_hrs}")
+    print(f"Average work week hours: {round(total_work_hrs*7/len(days),1)}")
     print(f"Mean work hours a day (excl days off):       {round(mean([day for day in work_hours_arr if day >= 1]),2)} hours")
     print(f"Median work hours a day (excl days off):     {round(median([day for day in work_hours_arr if day >= 1]),2)} hours")
     distance_between_days_off = map(lambda x,y: y-x, 
