@@ -97,6 +97,7 @@ def main(window_size=60):
     service = build('calendar', 'v3', credentials=creds)
 
     # Call the Calendar API
+    current_timezone = service.settings().list().execute()["items"][9]["value"]
     now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
     start_date = (datetime.datetime.today() - \
                   datetime.timedelta(window_size))\
@@ -115,6 +116,8 @@ def main(window_size=60):
     if not events:
         print('No upcoming events found.')
     for event in events:
+        # determine event date, time, timezone, and duration
+        timezone = event['start'].get('timeZone')
         start_time = event['start'].get('dateTime',
                                         event['start'].get('date'))
         end_time = event['end'].get('dateTime',
@@ -122,6 +125,25 @@ def main(window_size=60):
         event["duration"] = datetime.datetime.fromisoformat(end_time) - \
             datetime.datetime.fromisoformat(start_time)
         start_day = start_time[:10]
+        if start_day[:4] == "2020":
+            if int(start_day[5:7]) < 5:
+                timezone = "Asia/Dubai"
+            elif int(start_day[8:10]) < 26 and int(start_day[5:7]) == 5:
+                timezone = "Asia/Dubai"
+            elif int(start_day[5:7]) < 8:
+                timezone = "Europe/Chisinau"
+            elif int(start_day[8:10]) <= 22 and int(start_day[5:7]) == 8:
+                timezone = "Europe/Chisinau"                  
+            elif int(start_day[8:10]) > 22 and int(start_day[5:7]) <= 8:
+                timezone = "America/New_York"
+                
+        timezone_code = {"Asia/Dubai": 4,
+                         "Europe/Chisinau": 3,
+                         "America/New_York": -4,
+                         "America/Los_Angeles": -7}
+        event["timezone"] = timezone_code[timezone]
+        
+        # add day to the list of days
         if start_day not in days:
             days[start_day] = []
         days[start_day].append(event)
@@ -137,18 +159,23 @@ def main(window_size=60):
         day_events = days[day]
         work_hours = datetime.timedelta()
         start_of_day = day_events[0]["start"].get('dateTime', event['start'].get('date'))
+        timezone_offset = day_events[0]["timezone"]
         if start_of_day == None:
             start_of_day = day_events[1]["start"].get('dateTime', event['start'].get('date'))
 #         if day[]
-        if day[:4] == "2020" and int(day[5:7]) < 5 and int(day[8:10]) < 26:    
-            hr = int(start_of_day[11:13])+1
-            start_of_day = start_of_day[:11] + (hr<10)*'0' + str(hr) + start_of_day[13:15]
+#        if day[:4] == "2020" and int(day[5:7]) < 5 and int(day[8:10]) < 26:    
+#            hr = int(start_of_day[11:13]) + 1
+#            start_of_day = start_of_day[:11] + (hr<10)*'0' + str(hr) + start_of_day[13:15]
+        #start_of_day += datetime.timedelta(day_events[0]["timezone"])
         for event in day_events:
             if event["class"] == "work" or event["class"] == "ancillary":
                 work_hours += event["duration"]
         rest_hours = datetime.timedelta(hours=16) - work_hours
         work_hours_arr.append(work_hours.total_seconds()/3600)
-        start_of_day_arr.append(float(start_of_day[11:13]) + float(start_of_day[14:16])/60)
+        #print(start_of_day[11:13])
+        start_of_day_arr.append(float(start_of_day[11:13]) +
+                                float(start_of_day[14:16])/60 +
+                                timezone_offset - timezone_code[current_timezone])
     
     binned_start_of_day_arr = [int(round(tmstp)) for tmstp in start_of_day_arr]
     binned_grpd_strts = groupby(sorted(binned_start_of_day_arr), lambda p:p)
@@ -165,7 +192,8 @@ def main(window_size=60):
     for i,num in enumerate(work_hours_arr):
         total_work_hrs += num
         movave_work_hrs.append(sum(work_hours_arr[max(0, i - movave_window):i + 1]))
-    print(f"Total days in this report: {len(days)}/{window_size}")  
+    print(f"Total days in this report: {len(days)}/{window_size}")
+    print(f"Current timezone: {current_timezone}")
     print(f"Of these, days off: {len([day for day in work_hours_arr if day < 1])}")
     print(f"Total work hours in this report: {total_work_hrs}")
     print(f"Average work week hours: {round(total_work_hrs*7/len(days),1)}")
