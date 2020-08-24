@@ -102,6 +102,7 @@ def main(window_size=60):
     start_date = (datetime.datetime.today() - \
                   datetime.timedelta(window_size))\
                   .isoformat() + 'Z'
+    print(f"Current timezone: {current_timezone}")
     print(f'Getting the events in the\
  {start_date[:10]} ~ {now[:10]} interval:')
     events_result = service.events().list(calendarId='primary',
@@ -193,7 +194,6 @@ def main(window_size=60):
         total_work_hrs += num
         movave_work_hrs.append(sum(work_hours_arr[max(0, i - movave_window):i + 1]))
     print(f"Total days in this report: {len(days)}/{window_size}")
-    print(f"Current timezone: {current_timezone}")
     print(f"Of these, days off: {len([day for day in work_hours_arr if day < 1])}")
     print(f"Total work hours in this report: {total_work_hrs}")
     print(f"Average work week hours: {round(total_work_hrs*7/len(days),1)}")
