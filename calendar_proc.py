@@ -137,7 +137,8 @@ def main(window_size=60):
                 timezone = "Europe/Chisinau"                  
             elif int(start_day[8:10]) > 22 and int(start_day[5:7]) <= 8:
                 timezone = "America/New_York"
-                
+            else:
+                timezone = "America/New_York"
         timezone_code = {"Asia/Dubai": 4,
                          "Europe/Chisinau": 3,
                          "America/New_York": -4,
