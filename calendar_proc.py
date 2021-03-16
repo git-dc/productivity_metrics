@@ -100,7 +100,7 @@ def main(window_size=60):
     current_timezone = service.settings().list().execute()["items"][9]["value"]
     now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
     start_date = (datetime.datetime.today() - \
-                  datetime.timedelta(window_size))\
+                  datetime.timedelta(window_size-1))\
                   .isoformat() + 'Z'
     print(f"Current timezone: {current_timezone}")
     print(f'Getting the events in the\
@@ -139,6 +139,8 @@ def main(window_size=60):
                 timezone = "America/New_York"
             else:
                 timezone = "America/New_York"
+        elif start_day[:4] == "2021":
+            timezone = "America/New_York"
         timezone_code = {"Asia/Dubai": 4,
                          "Europe/Chisinau": 3,
                          "America/New_York": -4,
